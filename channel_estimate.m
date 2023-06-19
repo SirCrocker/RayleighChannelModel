@@ -14,6 +14,6 @@ function [fft, spline, linear, pchip] = channel_estimate(rxp,pilot,nb, N)
     t3 = t1(mod(t1, N) ~= 1); % Posiciones de los símbolos de mensaje
     fft = interpft(csi,nb); % interpolación fft
     spline = interp1(t2,csi,t3,'spline'); % interpolación spline (cubic)
-    linear = interp1(t2,csi,t3,'linear'); % interpolación lineal
+    linear = interp1(t2,csi,t3,'linear','extrap'); % interpolación lineal
     pchip = interp1(t2,csi,t3,'pchip'); % interpolación pchip (cubic)
 end
