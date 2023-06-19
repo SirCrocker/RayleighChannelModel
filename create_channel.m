@@ -15,9 +15,10 @@
 function channel_coeffs=create_channel(varargin)
     if nargin == 0
         error('Not enough input arguments.')
-    elseif nargin == 2
+    elseif nargin == 1
         % Canal multipath Rayleigh multiplicativo (infinitos paths)
         n_coeffs = varargin{1};
+        disp(n_coeffs)
         channel_coeffs = (randn( 1, n_coeffs) + 1i*randn(1, n_coeffs ))*sqrt(1/2);
     elseif nargin == 4
         % Rayleigh Fading
