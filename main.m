@@ -11,7 +11,7 @@ Scenes{7} = {0, 5, 30, 5.9e9};
 Scenes{8} = {0, 40, 30, 5.9e9};
 Scenes{9} = {0};
 
-modulation = "16QAM";
+modulation = "QPSK";
 folder_name = "./DATA";
 
 %% Calculate BER
@@ -46,9 +46,9 @@ for n_scene = 1:9
         fig = figure('Visible','off');
         semilogy(SNR_list,BER_fft,'b-',SNR_list,BER_spline,'r-' ...
             ,SNR_list,BER_linear,'k-',SNR_list,BER_pchip,'g-',SNR_list,BER_perfect,'m-');
-        legend('fft','cubic spline','linear','cubic','perfect');
+        legend('fft','cubic spline','linear','cubic','perfect','Location', 'sw');
         title('BER curves for different interpolation techniques');
-        subtitle("Scenario: " + num2str(n_scene) + "    Pilot distance: " + num2str(n_pilots))
+        subtitle("Modulation: " + modulation +"    Scenario: " + num2str(n_scene) + "    Pilot distance: " + num2str(n_pilots))
         xlabel('SNR in dB');
         ylabel('BER');
         xlim([-2, 30]);
