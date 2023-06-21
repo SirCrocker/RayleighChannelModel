@@ -11,7 +11,7 @@ Scenes{7} = {0, 5, 30, 5.9e9};
 Scenes{8} = {0, 40, 30, 5.9e9};
 Scenes{9} = {0};
 
-modulation = "QPSK";
+modulation = "16QAM";
 folder_name = "./DATA";
 
 %% Calculate BER
@@ -30,9 +30,12 @@ end
 
 %% Graph
 SNR_list = -2:1:30;
-for n_scene = 1:9
-    for n_pilots = pilotos
-        
+for n_pilots = pilotos
+    
+    fig = figure('Visible', 'off', 'Position', [0, 0, 1000, 900]);
+
+    for n_scene = 1:9
+
         filename = modulation + "_PILOT_" + num2str(n_pilots) + "_SCENE_" + num2str(n_scene);
         fullpath = fullfile(folder_name, filename + ".mat");
 
@@ -43,22 +46,32 @@ for n_scene = 1:9
         BER_linear = data.linear;
         BER_perfect = data.perfect;
 
-        fig = figure('Visible','off');
+        subplot(3,3, n_scene)
         semilogy(SNR_list,BER_fft,'b-',SNR_list,BER_spline,'r-' ...
             ,SNR_list,BER_linear,'k-',SNR_list,BER_pchip,'g-',SNR_list,BER_perfect,'m-');
-        legend('fft','cubic spline','linear','cubic','perfect','Location', 'sw');
-        title('BER curves for different interpolation techniques');
-        subtitle("Modulation: " + modulation +"    Scenario: " + num2str(n_scene) + "    Pilot distance: " + num2str(n_pilots))
-        xlabel('SNR in dB');
-        ylabel('BER');
+        %legend('fft','cubic spline','linear','cubic pchip','perfect','Location', 'sw');
+        title("Scenario " + num2str(n_scene), 'FontSize', 20)
+        %title('BER curves for different interpolation techniques');
+%         subtitle("Modulation: " + modulation +"    Scenario: " + num2str(n_scene) + "    Pilot distance: " + num2str(n_pilots))
+        %xlabel('SNR in dB');
+        %ylabel('BER');
         xlim([-2, 30]);
+        ylim([1e-3, 1])
         grid on
 
-        saveas(fig, fullfile("./PLOTS", filename + ".png"))
+        if n_scene == 4
+            ylabel("BER", 'FontSize', 24)
+        end
 
-        close
+        if n_scene == 8
+            xlabel("$\frac{E_b}{N_0}$ [dB]", "Interpreter", "latex", 'FontSize', 24)
+            %legend('fft','cubic spline','linear','cubic pchip','perfect','Location', 'southoutside');
+        end
+        
     end
-    
+    sgtitle(modulation + "  -  BER curves for pilot distance = " + num2str(n_pilots), 'FontSize', 24)
+    exportgraphics(fig, fullfile("./PLOTS_COCHINAS/", modulation + "_PILOT_" + num2str(n_pilots) + "_ALLSCENES" + ".png"), 'Resolution', 300)
+    close
 end
 
 
