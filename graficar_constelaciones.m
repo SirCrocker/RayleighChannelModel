@@ -3,130 +3,195 @@ clear;
 close all
 %% Inicialización
 % Constelaciones
-% TODO: ARREGLAR LAS FIGURAS !!!!!!!
 
-modulation = "QPSK";
-n_pilots=10; % Separación de símbolos piloto
-scene = {0, 50, 3e10, 3.6};
-montecarlo_number = 1;
-graph_const = true;
+folder_name = "./CONST";
 
+modulation = "8PSK";
+if ~isfolder(folder_name)
+    mkdir(folder_name);
+end
+n_pilots=5; % Separación de símbolos piloto
+scene = {0, 5, 80, 700e6};
 SNR_list = [-5, 0, 10, 30];
 n_bits = 1e5 + 8; % Número de bits
-
 pilot_symbol=1+1i; % Símbolo piloto
+ 
+bits_list = GenerateBits(n_bits); % Bits generados aleatoriamente
+modulated_symbols = Modulate(bits_list, modulation); % Símbolos generados según modulación
+n_symbols = length(modulated_symbols); % Número de símbolos
 
-rate_fft = zeros(montecarlo_number, length(SNR_list)); % BER para fft
-rate_spline = zeros(montecarlo_number, length(SNR_list)); % BER para spline
-rate_linear = zeros(montecarlo_number, length(SNR_list)); % BER para linear
-rate_pchip = zeros(montecarlo_number, length(SNR_list)); % BER pchip
-rate_perfect = zeros(montecarlo_number, length(SNR_list)); % BER perfect
+% Insertar señales piloto
+tx_pilots = insertPilot(modulated_symbols, pilot_symbol, n_pilots);
+len=length(tx_pilots);
+scene{1} = len;
 
-%% Transmisor
-for iter = 1:montecarlo_number
-    
-    bits_list = GenerateBits(n_bits); % Bits generados aleatoriamente
-    modulated_symbols = Modulate(bits_list, modulation); % Símbolos generados según modulación
-    n_symbols = length(modulated_symbols); % Número de símbolos
-    
-    % Insertar señales piloto
-    tx_pilots = insertPilot(modulated_symbols, pilot_symbol, n_pilots);
-    len=length(tx_pilots);
-    scene{1} = len;
-    
-    % Obtener los coeficientes de canal
-    channel_coefs = create_channel(scene{:});
-    
-    % Aplicar efectos del canal a la señal
-    tx_channel=tx_pilots.*channel_coefs; %Multiplying Rayleigh channel coeficients
+% Obtener los coeficientes de canal
+channel_coefs = create_channel(scene{:});
+
+% Aplicar efectos del canal a la señal
+tx_channel=tx_pilots.*channel_coefs; %Multiplying Rayleigh channel coeficients
+
+%% Constelaciones antes de ser transmitidas
+
+th = 0:pi/50:2*pi;
+xunit = cos(th);
+yunit = sin(th);
+
+
+fig = figure;
+plot(real(modulated_symbols),imag(modulated_symbols),'ro');
+hold on
+plot(xunit, yunit,'b--'); % plot a circle of radius 1
+title('Constellation before being transmitted for ' + modulation)
+xlabel('Real axis ');
+ylabel('Img axis');
+xlim([-1.2, 1.2]);
+ylim([-1.2, 1.2]);
+grid();
+
+filename = 'Constellation_' + modulation;
+exportgraphics(fig,fullfile(folder_name, filename + ".png"),'Resolution',300)
+
+%% Constelaciones recibidas con el efecto de ruido AWGN (SNR = -5dB, 0B, 10dB y 30dB)
+
+noise_1=awgn(modulated_symbols,SNR_list(1),'measured','db' );
+noise_2=awgn(modulated_symbols,SNR_list(2),'measured','db' );
+noise_3=awgn(modulated_symbols,SNR_list(3),'measured','db' );
+noise_4=awgn(modulated_symbols,SNR_list(4),'measured','db' );
+
+fig=figure;
+subplot(2,2,1)
+plot(real(noise_1),imag(noise_1),'r.');
+title('SNR = -5 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+grid on
+
+subplot(2,2,2)
+plot(real(noise_2),imag(noise_2),'r.');
+title('SNR = 0 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+grid on
+
+subplot(2,2,3)
+plot(real(noise_3),imag(noise_3),'r.');
+title('SNR = 10 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+grid on
+
+subplot(2,2,4)
+plot(real(noise_4),imag(noise_4),'r.');
+title('SNR = 30 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+grid on
+
+sgtitle('Constellations affected by noise for ' + modulation)
+filename = 'Constellations_noise_' + modulation;
+exportgraphics(fig,fullfile(folder_name, filename + ".png"),'Resolution',300)
+
+
+%% Constelaciones recibidas con el efecto de ruido AWGN y canal (SNR = -5dB, 0B, 10dB y 30dB)
+% antes de la estimación 
+
+noise_channel_1=awgn(tx_channel,SNR_list(1),'measured','db' );
+noise_channel_2=awgn(tx_channel,SNR_list(2),'measured','db' );
+noise_channel_3=awgn(tx_channel,SNR_list(3),'measured','db' );
+noise_channel_4=awgn(tx_channel,SNR_list(4),'measured','db' );
+
+[rx_pilot_1, rx_signal_1] = separatePilot(noise_channel_1, n_pilots);
+[rx_pilot_2, rx_signal_2] = separatePilot(noise_channel_2, n_pilots);
+[rx_pilot_3, rx_signal_3] = separatePilot(noise_channel_3, n_pilots);
+[rx_pilot_4, rx_signal_4] = separatePilot(noise_channel_4, n_pilots);
+
+fig=figure;
+
+subplot(2,2,1)
+plot(real(rx_signal_1),imag(rx_signal_1),'r.');
+title('SNR = -5 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+grid on
+
+subplot(2,2,2)
+plot(real(rx_signal_2),imag(rx_signal_2),'r.');
+title('SNR = 0 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+grid on
+
+subplot(2,2,3)
+plot(real(rx_signal_3),imag(rx_signal_3),'r.');
+title('SNR = 10 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+grid on
+
+subplot(2,2,4)
+plot(real(rx_signal_4),imag(rx_signal_4),'r.');
+title('SNR = 30 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+grid on
+
+sgtitle('Constellations with noise and Rayleigh fading for ' + modulation)
+filename = 'Constellations_noise_fading_' + modulation;
+exportgraphics(fig,fullfile(folder_name, filename + ".png"),'Resolution',300)
+
+%% Constelaciones recibidas con el efecto de ruido AWGN y canal (SNR = -5dB, 0B, 10dB y 30dB)
+% después de la estimación 
+
+[~, ~ , ~, cubic_1 ] = channel_estimate(rx_pilot_1,pilot_symbol, n_symbols, n_pilots);
+[~, ~ , ~, cubic_2 ] = channel_estimate(rx_pilot_2,pilot_symbol, n_symbols, n_pilots);
+[~, ~ , ~, cubic_3 ] = channel_estimate(rx_pilot_3,pilot_symbol, n_symbols, n_pilots);
+[~, ~ , ~, cubic_4 ] = channel_estimate(rx_pilot_4,pilot_symbol, n_symbols, n_pilots);
+
+RX_1_fft=rx_signal_1./cubic_1; 
+RX_2_fft=rx_signal_2./cubic_2; 
+RX_3_fft=rx_signal_3./cubic_3; 
+RX_4_fft=rx_signal_4./cubic_4; 
+
+fig=figure;
+subplot(2,2,1)
+plot(real(RX_1_fft),imag(RX_1_fft),'r.'); 
+title('SNR = -5 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+xlim([-20, 20]);
+ylim([-20, 20]);
+grid on
+
+subplot(2,2,2)
+plot(real(RX_2_fft),imag(RX_2_fft),'r.'); 
+title('SNR = 0 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+xlim([-10, 10]);
+ylim([-10, 10]);
+grid on
+
+subplot(2,2,3)
+plot(real(RX_3_fft),imag(RX_3_fft),'r.'); 
+title('SNR = 10 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+xlim([-5, 5]);
+ylim([-5, 5]);
+grid on
+
+subplot(2,2,4)
+plot(real(RX_4_fft),imag(RX_4_fft),'r.'); 
+title('SNR = 30 dB');
+xlabel('Real axis ');
+ylabel('Img axis');
+xlim([-2, 2]);
+ylim([-2, 2]);
+grid on
+
+sgtitle('Constellations with Equalization for ' + modulation)
+filename = 'Constellations_eq_' + modulation;
+exportgraphics(fig,fullfile(folder_name, filename + ".png"),'Resolution',300)
      
-    for snr=1:length(SNR_list)
-        % Agregar AWGN
-        TX_signal=awgn(tx_channel,SNR_list(snr),'measured','db' );
-        
-        % Recibir la señal completa y separar los símbolos piloto
-        [RX_pilots, RX_signal] = separatePilot(TX_signal, n_pilots);
-        
-        % Interpolaciones
-        [ch_fft, ch_spline,ch_linear, ch_pchip] = channel_estimate(RX_pilots,pilot_symbol, n_symbols, n_pilots);
-        
-        [~, channel_coefs_symbols] = separatePilot(channel_coefs, n_pilots);
-    
-        % Ecualización ZF
-        RX_fft=RX_signal./ch_fft;
-        RX_spline=RX_signal./ch_spline;
-        RX_linear=RX_signal./ch_linear;
-        RX_pchip=RX_signal./ch_pchip;
-        RX_perfect = RX_signal./channel_coefs_symbols;
-        
-        QAM_noise=TX_signal;
-        figure
-        plot(real(QAM_noise),imag(QAM_noise),'x');
-        title(modulation + " AFFECTED WITH NOISE");
-        xlabel('REAL(DATA)');
-        ylabel('IMG(DATA)');
-        
-        figure
-        plot(real(tx_channel),imag(tx_channel),'r.');
-        title(modulation + " AFFECTED WITH RAYLEIGH FADING");
-        xlabel('REAL(DATA)');
-        ylabel('IMG(DATA)');
-        
-        figure
-        plot(real(RX_signal),imag(RX_signal),'r.');
-        title(modulation + " PLOT WITH NOISE AND RAYLEIGH FADING");
-        xlabel('REAL(DATA)');
-        ylabel('IMG(DATA)');
-        
-        figure
-        plot(real(RX_fft),imag(RX_fft),'r.');
-        hold on;
-        plot(real(modulated_symbols),imag(modulated_symbols),'o');
-        grid on;
-        title(modulation + " PLOT");
-        xlabel('REAL(DATA)');
-        ylabel('IMG(DATA)');
-        legend('PLOT AT RX con Ecualización con interpolación FFT','PLOT AT TX' );
 
-        figure
-        plot(real(RX_spline),imag(RX_spline),'r.');
-        hold on;
-        plot(real(modulated_symbols),imag(modulated_symbols),'o');
-        grid on;
-        title(modulation + " PLOT");
-        xlabel('REAL(DATA)');
-        ylabel('IMG(DATA)');
-        legend('PLOT AT RX con Ecualización con interpolación CUBIC SPLINE','PLOT AT TX' );
-
-        figure
-        plot(real(RX_linear),imag(RX_linear),'r.');
-        hold on;
-        plot(real(modulated_symbols),imag(modulated_symbols),'o');
-        grid on;
-        title(modulation + " PLOT");
-        xlabel('REAL(DATA)');
-        ylabel('IMG(DATA)');
-        legend('PLOT AT RX con Ecualización con interpolación LINEAR','PLOT AT TX' );
-
-        figure
-        plot(real(RX_pchip),imag(RX_pchip),'r.');
-        hold on;
-        plot(real(modulated_symbols),imag(modulated_symbols),'o');
-        grid on;
-        title(modulation + " PLOT");
-        xlabel('REAL(DATA)');
-        ylabel('IMG(DATA)');
-        legend('PLOT AT RX con Ecualización con interpolación CUBIC PCHIP','PLOT AT TX' );
-
-        figure
-        plot(real(RX_perfect),imag(RX_perfect),'r.');
-        hold on;
-        plot(real(modulated_symbols),imag(modulated_symbols),'o');
-        grid on;
-        title(modulation + " PLOT");
-        xlabel('REAL(DATA)');
-        ylabel('IMG(DATA)');
-        legend('PLOT AT RX con Ecualización con interpolación PERFECT','PLOT AT TX' );
-
-    end
-end
