@@ -11,8 +11,18 @@ Scenes{7} = {0, 5, 30, 5.9e9};
 Scenes{8} = {0, 40, 30, 5.9e9};
 Scenes{9} = {0};
 
-modulation = "16QAM";
+% Modulations "QPSK", "8PSK" or "16QAM"
+modulation = "QPSK";
 folder_name = "./DATA";
+folder_plots = "./PLOTS/";
+
+if ~isfolder(folder_name)
+    mkdir(folder_name);
+end
+
+if ~isfolder(folder_plots)
+    mkdir(folder_plots);
+end
 
 %% Calculate BER
 
@@ -49,14 +59,8 @@ for n_pilots = pilotos
         subplot(3,3, n_scene)
         semilogy(SNR_list,BER_fft,'b-',SNR_list,BER_spline,'r-' ...
             ,SNR_list,BER_linear,'k-',SNR_list,BER_pchip,'g-',SNR_list,BER_perfect,'m-');
-        %legend('fft','cubic spline','linear','cubic pchip','perfect','Location', 'sw');
         title("Scenario " + num2str(n_scene), 'FontSize', 20)
-        %title('BER curves for different interpolation techniques');
-%         subtitle("Modulation: " + modulation +"    Scenario: " + num2str(n_scene) + "    Pilot distance: " + num2str(n_pilots))
-        %xlabel('SNR in dB');
-        %ylabel('BER');
         xlim([-2, 30]);
-        ylim([1e-3, 1])
         grid on
 
         if n_scene == 4
@@ -65,12 +69,11 @@ for n_pilots = pilotos
 
         if n_scene == 8
             xlabel("$\frac{E_b}{N_0}$ [dB]", "Interpreter", "latex", 'FontSize', 24)
-            %legend('fft','cubic spline','linear','cubic pchip','perfect','Location', 'southoutside');
         end
         
     end
     sgtitle(modulation + "  -  BER curves for pilot distance = " + num2str(n_pilots), 'FontSize', 24)
-    exportgraphics(fig, fullfile("./PLOTS_COCHINAS/", modulation + "_PILOT_" + num2str(n_pilots) + "_ALLSCENES" + ".png"), 'Resolution', 300)
+    exportgraphics(fig, fullfile(folder_plots, modulation + "_PILOT_" + num2str(n_pilots) + "_ALLSCENES" + ".png"), 'Resolution', 300)
     close
 end
 
