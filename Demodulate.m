@@ -1,3 +1,7 @@
+% RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
+% Agustín González - Diego Torreblanca - Luciano Vidal
+% ----------------------------------------------------
+
 % Demodulate a list of symbols acording to the desired modulation
 % symbols_list: array with complex numbers
 % mod_type: 'QPSK', '8PSK', '16QAM'

@@ -1,3 +1,8 @@
+% RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
+% Agustín González - Diego Torreblanca - Luciano Vidal
+% ----------------------------------------------------
+
+% Función que realiza todo el proceso de simular el canal, ver flujo para entender como funciona.
 function [BER_fft, BER_spline, BER_linear, BER_pchip, BER_perfect] = scenarioBER(modulation, scene, n_pilots)
     
     SNR_list=-2:1:30;

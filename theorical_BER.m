@@ -1,7 +1,13 @@
+% RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
+% Agustín González - Diego Torreblanca - Luciano Vidal
+% ----------------------------------------------------
+
+% Calculates and graphs the theoretical BER of the different modulations
 clear
 close all
 clc
 
+% Where the plots are saved
 folder = "./PLOTS/";
 if ~isfolder(folder)
     mkdir(folder);
@@ -20,9 +26,11 @@ SNR = 10.^(SNRdB/10); % lineal
 % QPSK
 aux_QPSK = 4 * SNR * sin(pi/4)^2;
 BER_QPSK = (1/2)*(1-sqrt((aux_QPSK)./(2+aux_QPSK)));
+
 % 8PSK
 aux_8PSK = 6 * SNR * sin(pi/8)^2;
 BER_8PSK = (1/3)*(1-sqrt((aux_8PSK)./(2+aux_8PSK)));
+
 % 16QAM
 aux_16QAM = (4/5) * SNR;
 BER_16QAM = 3/8*(1-sqrt((aux_16QAM)./(2+aux_16QAM)));

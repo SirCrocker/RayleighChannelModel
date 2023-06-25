@@ -1,3 +1,7 @@
+% RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
+% Agustín González - Diego Torreblanca - Luciano Vidal
+% ----------------------------------------------------
+
 % Modulate a bit list acording to the desired modulation
 % bit_list: array with 0,1
 % mod_type: 'QPSK', '8PSK', '16QAM'

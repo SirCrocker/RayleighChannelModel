@@ -1,24 +1,32 @@
+% RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
+% Agustín González - Diego Torreblanca - Luciano Vidal
+% ----------------------------------------------------
+% Script que grafica las constelaciones
+% Se limpia y cierra todo antes de ejecutar
 clc;
 clear;
 close all
+
 %% Inicialización
 % Constelaciones
 
 folder_name = "./CONST";
 
+% Modulación a simular (opciones: 16QAM, 8PSK, QPSK)
 modulation = "8PSK";
 if ~isfolder(folder_name)
     mkdir(folder_name);
 end
-n_pilots=5; % Separación de símbolos piloto
-scene = {0, 5, 80, 700e6};
-SNR_list = [-5, 0, 10, 30];
-n_bits = 1e5 + 8; % Número de bits
-pilot_symbol=1+1i; % Símbolo piloto
+
+n_pilots=5;                 % Separación de símbolos piloto
+scene = {0, 5, 80, 700e6};  % Escenario a simular
+SNR_list = [-5, 0, 10, 30]; % SNR a simular
+n_bits = 1e5 + 8;           % Número de bits
+pilot_symbol=1+1i;          % Símbolo piloto
  
-bits_list = GenerateBits(n_bits); % Bits generados aleatoriamente
+bits_list = GenerateBits(n_bits);                    % Bits generados aleatoriamente
 modulated_symbols = Modulate(bits_list, modulation); % Símbolos generados según modulación
-n_symbols = length(modulated_symbols); % Número de símbolos
+n_symbols = length(modulated_symbols);               % Número de símbolos
 
 % Insertar señales piloto
 tx_pilots = insertPilot(modulated_symbols, pilot_symbol, n_pilots);
@@ -94,7 +102,7 @@ exportgraphics(fig,fullfile(folder_name, filename + ".png"),'Resolution',300)
 
 
 %% Constelaciones recibidas con el efecto de ruido AWGN y canal (SNR = -5dB, 0B, 10dB y 30dB)
-% antes de la estimación 
+% Antes de la ecualización
 
 noise_channel_1=awgn(tx_channel,SNR_list(1),'measured','db' );
 noise_channel_2=awgn(tx_channel,SNR_list(2),'measured','db' );
@@ -141,7 +149,7 @@ filename = 'Constellations_noise_fading_' + modulation;
 exportgraphics(fig,fullfile(folder_name, filename + ".png"),'Resolution',300)
 
 %% Constelaciones recibidas con el efecto de ruido AWGN y canal (SNR = -5dB, 0B, 10dB y 30dB)
-% después de la estimación 
+% después de la ecualización 
 
 [~, ~ , ~, cubic_1 ] = channel_estimate(rx_pilot_1,pilot_symbol, n_symbols, n_pilots);
 [~, ~ , ~, cubic_2 ] = channel_estimate(rx_pilot_2,pilot_symbol, n_symbols, n_pilots);
@@ -194,4 +202,4 @@ sgtitle('Constellations with Equalization for ' + modulation)
 filename = 'Constellations_eq_' + modulation;
 exportgraphics(fig,fullfile(folder_name, filename + ".png"),'Resolution',300)
      
-
+% fin

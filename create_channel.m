@@ -1,3 +1,7 @@
+% RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
+% Agustín González - Diego Torreblanca - Luciano Vidal
+% ----------------------------------------------------
+
 %% Coeficientes del canal con Rayleigh Fading
 % Genera los coeficientes para el canal modelado como Rayleigh Fading.
 % 

@@ -1,5 +1,12 @@
+% RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
+% Agustín González - Diego Torreblanca - Luciano Vidal
+% ----------------------------------------------------
+
+% Distancia entre símbolos pilotos
 pilotos = [5,10,20];
 
+% Escenarios a simular
+% Placeholder | Número de paths | Velocidad del movil | frecuencia central de la portadora
 Scenes = {};
 Scenes{1} = {0, 5, 80, 700e6};
 Scenes{2} = {0, 40, 80, 700e6};
@@ -11,11 +18,12 @@ Scenes{7} = {0, 5, 30, 5.9e9};
 Scenes{8} = {0, 40, 30, 5.9e9};
 Scenes{9} = {0};
 
-% Modulations "QPSK", "8PSK" or "16QAM"
+% Modulaciones posibles "QPSK", "8PSK" or "16QAM"
 modulation = "QPSK";
 folder_name = "./DATA";
 folder_plots = "./PLOTS/";
 
+% Crea las carpetas donde se guardarán los datos
 if ~isfolder(folder_name)
     mkdir(folder_name);
 end
@@ -24,8 +32,8 @@ if ~isfolder(folder_plots)
     mkdir(folder_plots);
 end
 
-%% Calculate BER
-
+%% Calcular BER
+% Usa procesamiento en paralelo (se necesita más de 1 núcleo en el PC)
 parfor n_scene = 1:9
     scene = Scenes{n_scene};
     for n_pilots = pilotos
@@ -38,7 +46,7 @@ parfor n_scene = 1:9
     
 end
 
-%% Graph
+%% Gráficar resultados (curvas BER)
 SNR_list = -2:1:30;
 for n_pilots = pilotos
     
@@ -78,7 +86,8 @@ for n_pilots = pilotos
 end
 
 
-%% Function
+%% Funciones auxiliares
+% Guarda los datos obtenidos, se necesita al trabajar con 'parfor'
 function parsave(fname, perfect, pchip, linear, spline, fft)
   save(fname, 'perfect', 'pchip', 'linear', 'spline', 'fft')
 end

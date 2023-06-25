@@ -1,3 +1,7 @@
+% RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
+% Agustín González - Diego Torreblanca - Luciano Vidal
+% ----------------------------------------------------
+
 %% Estimación del canal
 % Genera los coeficientes estimados del canal según las interpolaciones
 % lineal, fft, spline y pchip para realizar la ecualización
