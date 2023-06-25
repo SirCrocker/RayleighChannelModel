@@ -8,3 +8,4 @@ El objetivo de la simulación es calcular las curvas de BER vs $\frac{E_b}{N_0}$
 
 ![Flujo General](imgs/digital_system.png)
 
+Para ejecutar la simulación hay que hacerlo desde el archivo ```main.m```.
