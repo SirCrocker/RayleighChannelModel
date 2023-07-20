@@ -1,27 +1,27 @@
 % RAYLEIGH FADING SIMULATION - Comunicaciones Digitales Avanzadas Otoño 2023
 % Agustín González - Diego Torreblanca - Luciano Vidal
+% Versión con Channel Coding
 % ----------------------------------------------------
 
 % Distancia entre símbolos pilotos
-pilotos = [5,10,20];
+pilotos = [5, 10];
 
 % Escenarios a simular
 % Placeholder | Número de paths | Velocidad del movil | frecuencia central de la portadora
 Scenes = {};
-Scenes{1} = {0, 5, 80, 700e6};
-Scenes{2} = {0, 40, 80, 700e6};
-Scenes{3} = {0, 5, 30, 700e6};
-Scenes{4} = {0, 40, 30, 700e6};
-Scenes{5} = {0, 5, 80, 5.9e9};
-Scenes{6} = {0, 40, 80, 5.9e9};
-Scenes{7} = {0, 5, 30, 5.9e9};
-Scenes{8} = {0, 40, 30, 5.9e9};
-Scenes{9} = {0};
+Scenes{1} = {0, 10, 50, 700e6};
+Scenes{2} = {0, 10, 50, 2500e6};
+Scenes{3} = {0, 10, 50, 5900e6};
 
-% Modulaciones posibles "QPSK", "8PSK" or "16QAM"
-modulation = "QPSK";
-folder_name = "./DATA";
-folder_plots = "./PLOTS/";
+% Modulaciones
+modulations = ["QPSK", "16QAM"];
+
+% ** Número de escena a simular (1, 2 ó 3) ** 
+n_scene = 1;
+scene = Scenes{n_scene};
+
+folder_name = fullfile(pwd, "DATA");
+folder_plots = fullfile(pwd, "PLOTS");
 
 % Crea las carpetas donde se guardarán los datos
 if ~isfolder(folder_name)
@@ -34,60 +34,45 @@ end
 
 %% Calcular BER
 % Usa procesamiento en paralelo (se necesita más de 1 núcleo en el PC)
-parfor n_scene = 1:9
-    scene = Scenes{n_scene};
-    for n_pilots = pilotos
-        filename = modulation + "_PILOT_" + num2str(n_pilots) + "_SCENE_" + num2str(n_scene) + ".mat";
-        fullpath = fullfile(folder_name, filename);
-
-        [BER_fft, BER_spline, BER_linear, BER_pchip, BER_perfect] = scenarioBER(modulation, scene, n_pilots);
-        parsave(fullpath, BER_perfect, BER_pchip, BER_linear, BER_spline, BER_fft);
-    end
+parfor modulation = modulations
+    for encodechnl = [false, true]
+        for n_pilots = pilotos
+            filename = modulation + "_PILOT_" + num2str(n_pilots) + "_SCENE_" + num2str(n_scene) + "_ENCODED_" + num2str(encodechnl) +".mat";
+            fullpath = fullfile(folder_name, filename);
     
+            [~, ~, BER_linear, ~, BER_perfect] = scenarioBER(modulation, scene, n_pilots, encodechnl);
+            parsave(fullpath, BER_perfect, BER_linear);
+        end
+    end
 end
 
 %% Gráficar resultados (curvas BER)
 SNR_list = -2:1:30;
-for n_pilots = pilotos
-    
-    fig = figure('Visible', 'off', 'Position', [0, 0, 1000, 900]);
+for modulation = modulations
+    for n_pilots = pilotos
+        fig = figure('Visible', 'off', 'Position', [0, 0, 1000, 900]);
+        subplot(1, 2, n_pilots/5)
+        for encodechnl = [false, true]
+            filename = modulation + "_PILOT_" + num2str(n_pilots) + "_SCENE_" + num2str(n_scene) + "_ENCODED_" + num2str(encodechnl);
+            fullpath = fullfile(folder_name, filename + ".mat");
 
-    for n_scene = 1:9
+            data = load(fullpath);
+            BER_linear = data.linear;
+            BER_perfect = data.perfect;
 
-        filename = modulation + "_PILOT_" + num2str(n_pilots) + "_SCENE_" + num2str(n_scene);
-        fullpath = fullfile(folder_name, filename + ".mat");
+            semilogy(SNR_list,BER_linear, SNR_list,BER_perfect);
 
-        data = load(fullpath);
-        BER_fft = data.fft;
-        BER_spline = data.spline;
-        BER_pchip = data.pchip;
-        BER_linear = data.linear;
-        BER_perfect = data.perfect;
+        end
 
-        subplot(3,3, n_scene)
-        semilogy(SNR_list,BER_fft,'b-',SNR_list,BER_spline,'r-' ...
-            ,SNR_list,BER_linear,'k-',SNR_list,BER_pchip,'g-',SNR_list,BER_perfect,'m-');
         title("Scenario " + num2str(n_scene), 'FontSize', 20)
         xlim([-2, 30]);
         grid on
-
-        if n_scene == 4
-            ylabel("BER", 'FontSize', 24)
-        end
-
-        if n_scene == 8
-            xlabel("$\frac{E_b}{N_0}$ [dB]", "Interpreter", "latex", 'FontSize', 24)
-        end
-        
     end
-    sgtitle(modulation + "  -  BER curves for pilot distance = " + num2str(n_pilots), 'FontSize', 24)
-    exportgraphics(fig, fullfile(folder_plots, modulation + "_PILOT_" + num2str(n_pilots) + "_ALLSCENES" + ".png"), 'Resolution', 300)
-    close
+    exportgraphics(fig, fullfile(folder_plots, modulation + "_BOTHPILOTS" + "_SCENE_" + num2str(n_scene) + "_WITHENCDN_" + ".png"), 'Resolution', 300)
 end
-
 
 %% Funciones auxiliares
 % Guarda los datos obtenidos, se necesita al trabajar con 'parfor'
-function parsave(fname, perfect, pchip, linear, spline, fft)
-  save(fname, 'perfect', 'pchip', 'linear', 'spline', 'fft')
+function parsave(fname, perfect, linear)
+  save(fname, 'perfect', 'linear')
 end
