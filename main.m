@@ -34,7 +34,8 @@ end
 
 %% Calcular BER
 % Usa procesamiento en paralelo (se necesita más de 1 núcleo en el PC)
-parfor modulation = modulations
+parfor modulationum = 1:length(modulations)
+    modulation = modulations(modulationum);
     for encodechnl = [false, true]
         for n_pilots = pilotos
             filename = modulation + "_PILOT_" + num2str(n_pilots) + "_SCENE_" + num2str(n_scene) + "_ENCODED_" + num2str(encodechnl) +".mat";
@@ -42,6 +43,7 @@ parfor modulation = modulations
     
             [~, ~, BER_linear, ~, BER_perfect] = scenarioBER(modulation, scene, n_pilots, encodechnl);
             parsave(fullpath, BER_perfect, BER_linear);
+            disp(filename)
         end
     end
 end
@@ -67,6 +69,7 @@ for modulation = modulations
         title("Scenario " + num2str(n_scene), 'FontSize', 20)
         xlim([-2, 30]);
         grid on
+        legend(["Linear", "Perfect", "Linear Enc.", "Perfect Enc."])
     end
     exportgraphics(fig, fullfile(folder_plots, modulation + "_BOTHPILOTS" + "_SCENE_" + num2str(n_scene) + "_WITHENCDN_" + ".png"), 'Resolution', 300)
 end
