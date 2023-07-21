@@ -50,9 +50,11 @@ end
 
 %% Gráficar resultados (curvas BER)
 SNR_list = -2:1:30;
+
 for modulation = modulations
+    fig = figure('Visible', 'off', 'Position', [0, 0, 1000, 450]);
     for n_pilots = pilotos
-        fig = figure('Visible', 'off', 'Position', [0, 0, 1000, 900]);
+        data_plot = zeros(33, 4);
         subplot(1, 2, n_pilots/5)
         for encodechnl = [false, true]
             filename = modulation + "_PILOT_" + num2str(n_pilots) + "_SCENE_" + num2str(n_scene) + "_ENCODED_" + num2str(encodechnl);
@@ -62,15 +64,17 @@ for modulation = modulations
             BER_linear = data.linear;
             BER_perfect = data.perfect;
 
-            semilogy(SNR_list,BER_linear, SNR_list,BER_perfect);
+            data_plot(:, (encodechnl*2 + 1):(encodechnl*2 + 2)) =[BER_linear', BER_perfect'];
 
         end
-
-        title("Scenario " + num2str(n_scene), 'FontSize', 20)
+        
+        semilogy(SNR_list, data_plot)
+        subtitle("Scenario: " + num2str(n_scene) + ",  Pilot distance: " + num2str(n_pilots), 'FontSize', 17)
         xlim([-2, 30]);
         grid on
         legend(["Linear", "Perfect", "Linear Enc.", "Perfect Enc."])
     end
+    sgtitle("BER Curves for " + modulation, 'FontSize', 20)
     exportgraphics(fig, fullfile(folder_plots, modulation + "_BOTHPILOTS" + "_SCENE_" + num2str(n_scene) + "_WITHENCDN_" + ".png"), 'Resolution', 300)
 end
 
