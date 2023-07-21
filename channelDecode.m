@@ -8,9 +8,9 @@ function [decoded_bits] = channelDecode(codeword)
     decoded_bits = zeros(1,len*4/7);
 
     % Matriz de Chequeo de Paridad H
-    H = [1,1,1,1,0,0,0;
-        1,1,0,0,1,1,0;
-        1,0,1,0,1,0,1];
+    H = [1,1,1,0,1,0,0;
+        1,1,0,1,0,1,0;
+        1,0,1,1,0,0,1];
 
     % Decodificación
     for i=1:len/7
@@ -30,8 +30,8 @@ function [decoded_bits] = channelDecode(codeword)
         d7 = v_invertido(7);
         d6 = v_invertido(6);
         d5 = v_invertido(5);
-        d3 = v_invertido(3);
-        decoded_bits(4*i-3:4*i)=int32([d7,d6,d5,d3]);
+        d4 = v_invertido(4);
+        decoded_bits(4*i-3:4*i)=int32([d7,d6,d5,d4]);
     end
 end
 

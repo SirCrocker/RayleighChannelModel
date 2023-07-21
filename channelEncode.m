@@ -8,10 +8,10 @@ function [codeword] = channelEncode(bits_list)
     codeword = zeros(1,len*7/4);
 
     % Matriz Generadora G
-    G = [1,0,0,1,0,1,1;
-        0,1,0,1,0,1,0;
-        0,0,1,1,0,0,1;
-        0,0,0,0,1,1,1];
+    G = [1,0,0,0,1,1,1;
+        0,1,0,0,1,1,0;
+        0,0,1,0,1,0,1;
+        0,0,0,1,0,1,1];
 
     % Codificación
     for i=1:len/4
