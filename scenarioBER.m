@@ -3,10 +3,10 @@
 % ----------------------------------------------------
 
 % Función que realiza todo el proceso de simular el canal, ver flujo para entender como funciona.
-function [BER_fft, BER_spline, BER_linear, BER_pchip, BER_perfect] = scenarioBER(modulation, scene, n_pilots)
+function [BER_fft, BER_spline, BER_linear, BER_pchip, BER_perfect] = scenarioBER(modulation, scene, n_pilots, coding)
     
     SNR_list=-2:1:30;
-    n_bits = 1e5 + 8; % Número de bits
+    n_bits = 1e5; % Número de bits
     montecarlo_number = 21;
 
     pilot_symbol=1+1i; % Símbolo piloto
@@ -21,7 +21,15 @@ function [BER_fft, BER_spline, BER_linear, BER_pchip, BER_perfect] = scenarioBER
     for iter = 1:montecarlo_number
         
         bits_list = GenerateBits(n_bits); % Bits generados aleatoriamente
-        modulated_symbols = Modulate(bits_list, modulation); % Símbolos generados según modulación
+
+        % bloque de codificación de canal con Hamming (7,4)
+        if coding
+            coded_symbols = channelEncode(bits_list); % Obtener Codewords
+            modulated_symbols = Modulate(coded_symbols, modulation); % Símbolos generados según modulación
+        else
+            modulated_symbols = Modulate(bits_list, modulation); % Símbolos generados según modulación
+        end
+
         n_symbols = length(modulated_symbols); % Número de símbolos
         
         % Insertar señales piloto
@@ -61,12 +69,32 @@ function [BER_fft, BER_spline, BER_linear, BER_pchip, BER_perfect] = scenarioBER
             demod_pchip=Demodulate(RX_pchip,modulation);
             demod_perfect=Demodulate(RX_perfect,modulation);
             
-            % Cálculo de BER según SNR
-            [~,rate_fft(iter, snr)]=biterr(bits_list,demod_fft); 
-            [~,rate_spline(iter, snr)]=biterr(bits_list,demod_spline); 
-            [~,rate_linear(iter, snr)]=biterr(bits_list,demod_linear); 
-            [~,rate_pchip(iter, snr)]=biterr(bits_list,demod_pchip);
-            [~,rate_perfect(iter, snr)]=biterr(bits_list,demod_perfect);
+
+            % bloque de decodificación
+
+            if coding
+                % Decodificación de codewords y correción de errores
+                decoded_fft = channelDecode(demod_fft);
+                decoded_spline = channelDecode(demod_spline);
+                decoded_linear = channelDecode(demod_linear);
+                decoded_pchip = channelDecode(demod_pchip);
+                decoded_perfect = channelDecode(demod_perfect);
+
+                % Cálculo de BER según SNR
+                [~,rate_fft(iter, snr)]=biterr(bits_list,decoded_fft); 
+                [~,rate_spline(iter, snr)]=biterr(bits_list,decoded_spline); 
+                [~,rate_linear(iter, snr)]=biterr(bits_list,decoded_linear); 
+                [~,rate_pchip(iter, snr)]=biterr(bits_list,decoded_pchip);
+                [~,rate_perfect(iter, snr)]=biterr(bits_list,decoded_perfect);
+
+            else
+                % Cálculo de BER según SNR
+                [~,rate_fft(iter, snr)]=biterr(bits_list,demod_fft); 
+                [~,rate_spline(iter, snr)]=biterr(bits_list,demod_spline); 
+                [~,rate_linear(iter, snr)]=biterr(bits_list,demod_linear); 
+                [~,rate_pchip(iter, snr)]=biterr(bits_list,demod_pchip);
+                [~,rate_perfect(iter, snr)]=biterr(bits_list,demod_perfect);
+            end
         end
     end
     
