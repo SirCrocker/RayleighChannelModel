@@ -17,7 +17,7 @@ Scenes{3} = {0, 10, 50, 5900e6};
 modulations = ["QPSK", "16QAM"];
 
 % ** Número de escena a simular (1, 2 ó 3) ** 
-n_scene = 1;
+n_scene = 2;
 scene = Scenes{n_scene};
 
 folder_name = fullfile(pwd, "DATA");
@@ -68,7 +68,7 @@ for modulation = modulations
 
         end
         
-        semilogy(SNR_list, data_plot)
+        semilogy(SNR_list, data_plot, 'LineWidth', 1.05)
         subtitle("Scenario: " + num2str(n_scene) + ",  Pilot distance: " + num2str(n_pilots), 'FontSize', 17)
         xlim([-2, 30]);
         grid on
