@@ -73,7 +73,7 @@ for modulation = modulations
         xlim([-2, 30]);
         grid on
         legend(["Linear", "Perfect", "Linear Enc.", "Perfect Enc."])
-        xlabel("$$\frac{E_b}{N_0}$$", "Interpreter","latex")
+        xlabel("$$\frac{E_b}{N_0}$$ [dB]", "Interpreter","latex")
         ylabel("BER")
     end
     sgtitle("BER Curves for " + modulation + " and scenario " + num2str(n_scene), 'FontSize', 20)
